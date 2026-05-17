@@ -1,0 +1,92 @@
+{% extends "game/base.html" %}
+{% load static %}
+{% block title %}Join or Create — WordBloom{% endblock %}
+
+{% block nav_extra %}
+  <a href="{% url 'index' %}" class="btn btn-ghost" style="font-size:0.85rem">← Home</a>
+{% endblock %}
+
+{% block content %}
+<div class="lobby-wrap fade-in">
+  <h2 style="margin-bottom:0.25rem">Multiplayer Room</h2>
+  <p class="subtitle" style="margin-bottom:2rem">Create a new room or join one with a code.</p>
+
+  <div id="lobby-form">
+    <div class="card" style="margin-bottom:1.2rem">
+      <p class="section-label" style="margin-bottom:10px">Your name</p>
+      <input type="text" id="player-name" placeholder="Enter your name…" maxlength="20" autocomplete="off"/>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.5rem">
+      <button class="btn btn-primary" onclick="createRoom()" style="justify-content:center;padding:1rem">
+        🎉 Create Room
+      </button>
+      <button class="btn btn-secondary" onclick="showJoinForm()" style="justify-content:center;padding:1rem">
+        🔑 Join Room
+      </button>
+    </div>
+
+    <div id="join-form" class="card hidden" style="margin-bottom:1rem">
+      <p class="section-label" style="margin-bottom:10px">Room code</p>
+      <div style="display:flex;gap:10px">
+        <input type="text" id="room-code-input" placeholder="e.g. ABCD" maxlength="4"
+               style="text-transform:uppercase;letter-spacing:0.15em;font-size:1.1rem;font-weight:600"/>
+        <button class="btn btn-primary" onclick="joinRoom()">Join →</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="lobby-loading" class="hidden" style="text-align:center;padding:2rem">
+    <div style="font-size:2rem" class="spin">🌸</div>
+    <p style="margin-top:1rem;color:var(--muted)" id="loading-msg">Setting up your room…</p>
+  </div>
+</div>
+
+<style>.hidden{display:none!important}</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function showJoinForm() {
+  document.getElementById('join-form').classList.toggle('hidden');
+  document.getElementById('room-code-input').focus();
+}
+
+async function createRoom() {
+  const name = document.getElementById('player-name').value.trim();
+  if (!name) { showToast('Enter your name first!', 'error'); return; }
+  document.getElementById('lobby-form').classList.add('hidden');
+  document.getElementById('lobby-loading').classList.remove('hidden');
+  document.getElementById('loading-msg').textContent = 'Creating room…';
+  const data = await api('/api/room/create/', { name });
+  if (data.error) { showToast(data.error, 'error'); return; }
+  sessionStorage.setItem('player_id', data.player_id);
+  sessionStorage.setItem('is_host', '1');
+  window.location.href = `/room/${data.code}/`;
+}
+
+async function joinRoom() {
+  const name = document.getElementById('player-name').value.trim();
+  const code = document.getElementById('room-code-input').value.trim().toUpperCase();
+  if (!name) { showToast('Enter your name first!', 'error'); return; }
+  if (!code || code.length !== 4) { showToast('Enter a valid 4-letter code', 'error'); return; }
+  document.getElementById('lobby-form').classList.add('hidden');
+  document.getElementById('lobby-loading').classList.remove('hidden');
+  document.getElementById('loading-msg').textContent = `Joining room ${code}…`;
+  const data = await api('/api/room/join/', { name, code });
+  if (data.error) {
+    showToast(data.error, 'error');
+    document.getElementById('lobby-form').classList.remove('hidden');
+    document.getElementById('lobby-loading').classList.add('hidden');
+    return;
+  }
+  sessionStorage.setItem('player_id', data.player_id);
+  sessionStorage.setItem('is_host', '0');
+  window.location.href = `/room/${code}/`;
+}
+
+document.getElementById('room-code-input')?.addEventListener('keydown', e => {
+  if (e.key === 'Enter') joinRoom();
+});
+</script>
+{% endblock %}
