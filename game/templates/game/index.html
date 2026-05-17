@@ -2,37 +2,37 @@
 {% block title %}WordBloom — Play{% endblock %}
 
 {% block content %}
-<div class="hero fade-in">
-  <div style="margin-bottom:0.5rem">
-    <span class="badge badge-peach">Family &amp; Friends</span>
+<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;padding:1.5rem;gap:1.2rem;">
+
+  <div class="hero fade-in" style="padding:0;gap:0.6rem;">
+    <div><span class="badge badge-peach">Family &amp; Friends</span></div>
+    <h1 style="font-size:clamp(1.8rem,4vw,2.8rem)">Find words.<br>Beat your friends.</h1>
+    <p class="hero-tagline" style="font-size:0.95rem;">Unscramble letters, discover hidden words, and see who reigns supreme.</p>
   </div>
-  <h1>Find words.<br>Beat your friends.</h1>
-  <p class="hero-tagline">Unscramble letters, discover hidden words, and see who reigns supreme.</p>
-</div>
 
-<div class="mode-cards fade-in">
-  <a href="{% url 'solo' %}" class="mode-card">
-    <div class="mode-icon">🌸</div>
-    <h3>Solo Play</h3>
-    <p>Challenge yourself across 5 difficulty levels. Track your personal best and aim for a clean sweep.</p>
-    <div style="margin-top:auto;padding-top:1rem">
-      <span class="badge badge-lilac">5 levels</span>
-      <span class="badge badge-peach" style="margin-left:6px">Hints available</span>
-    </div>
-  </a>
+  <div class="mode-cards fade-in" style="padding:0;margin:0;">
+    <a href="{% url 'solo' %}" class="mode-card">
+      <div class="mode-icon">🌸</div>
+      <h3>Solo Play</h3>
+      <p>Challenge yourself across 5 difficulty levels. Aim for a clean sweep.</p>
+      <div style="margin-top:auto;padding-top:0.75rem">
+        <span class="badge badge-lilac">5 levels</span>
+        <span class="badge badge-peach" style="margin-left:6px">Hints available</span>
+      </div>
+    </a>
 
-  <a href="{% url 'lobby' %}" class="mode-card">
-    <div class="mode-icon">🎉</div>
-    <h3>Play with Friends</h3>
-    <p>Create a room, share the code, and compete live. Perfect for meetings, gatherings, or family nights.</p>
-    <div style="margin-top:auto;padding-top:1rem">
-      <span class="badge badge-lilac">Multiplayer</span>
-      <span class="badge badge-peach" style="margin-left:6px">Real-time scores</span>
-    </div>
-  </a>
-</div>
+    <a href="{% url 'lobby' %}" class="mode-card">
+      <div class="mode-icon">🎉</div>
+      <h3>Play with Friends</h3>
+      <p>Create a room, share the code, and compete live. Perfect for meetings.</p>
+      <div style="margin-top:auto;padding-top:0.75rem">
+        <span class="badge badge-lilac">Multiplayer</span>
+        <span class="badge badge-peach" style="margin-left:6px">Real-time scores</span>
+      </div>
+    </a>
+  </div>
 
-<div style="text-align:center;padding:1rem 1rem 3rem">
-  <p style="font-size:0.85rem;color:var(--muted)">Shuffle • Submit • Score — repeat until time runs out ⏱</p>
+  <p style="font-size:0.82rem;color:var(--muted);text-align:center;">Shuffle • Submit • Score — repeat until time runs out ⏱</p>
+
 </div>
 {% endblock %}
