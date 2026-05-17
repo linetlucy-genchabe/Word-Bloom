@@ -1,0 +1,140 @@
+{% extends "game/base.html" %}
+{% load static %}
+{% block title %}Solo Play — WordBloom{% endblock %}
+
+{% block nav_extra %}
+  <a href="{% url 'index' %}" class="btn btn-ghost" style="font-size:0.85rem">← Home</a>
+{% endblock %}
+
+{% block content %}
+
+<!-- START SCREEN -->
+<div id="start-screen" class="fade-in" style="max-width:640px;margin:2rem auto;padding:0 1.5rem">
+  <div class="card">
+    <h2 style="margin-bottom:0.25rem">Solo Challenge</h2>
+    <p class="subtitle" style="margin-bottom:1.5rem">Pick your difficulty and see how many words you can find.</p>
+
+    <p class="section-label">Choose your level</p>
+    <div class="level-grid" style="margin-bottom:1.5rem">
+      {% for key, cfg in levels.items %}
+      <div class="level-card {% if key == 'easy' %}active{% endif %}" data-level="{{ key }}">
+        <div class="level-name">{{ cfg.label }}</div>
+        <div class="level-time">{{ cfg.time }}s · {{ cfg.min_len }}+ letters</div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <div style="background:var(--lilac-ghost);border-radius:var(--radius-md);padding:1rem;margin-bottom:1.5rem;font-size:0.88rem;color:var(--muted)">
+      💡 <strong style="color:var(--plum)">Bonus:</strong> Use all letters in one word for double points! &nbsp;·&nbsp;
+      🔀 Shuffle letters anytime &nbsp;·&nbsp; 💡 Up to 3 hints per game
+    </div>
+
+    <button class="btn btn-primary" onclick="startGame()" style="width:100%;justify-content:center;font-size:1rem;padding:1rem">
+      Start Game →
+    </button>
+  </div>
+</div>
+
+<!-- GAME SCREEN -->
+<div id="game-screen" class="hidden">
+  <div class="game-layout">
+
+    <div class="game-main">
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+        <span class="badge badge-lilac" id="meta-level">Easy</span>
+        <span class="badge badge-peach" id="meta-minlen">3+ letters</span>
+        <span style="font-size:0.85rem;color:var(--muted)" id="meta-count">15 words</span>
+      </div>
+
+      <div class="card" style="padding:1.5rem">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
+          <p class="section-label">Letters</p>
+          <button class="btn-icon" onclick="shuffleLetters()" title="Shuffle">🔀</button>
+        </div>
+        <div class="letter-rack" id="letter-rack"></div>
+      </div>
+
+      <div class="card" style="padding:1.2rem">
+        <div class="word-input-wrap">
+          <input type="text" class="word-input" id="word-input" placeholder="Type a word…" autocomplete="off" autocapitalize="characters" maxlength="20"/>
+          <button class="btn btn-primary" onclick="submitWord()">Submit</button>
+          <button class="btn btn-ghost" id="hint-btn" onclick="useHint()">Hint (3)</button>
+        </div>
+      </div>
+
+      <div class="card" style="padding:1.2rem">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <p class="section-label">Progress</p>
+          <span style="font-size:0.85rem;color:var(--muted)" id="progress-label">0 / 0 words</span>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+      </div>
+
+      <div class="card" style="padding:1.2rem">
+        <p class="section-label" style="margin-bottom:10px">Words found</p>
+        <div class="found-words" id="found-words"></div>
+      </div>
+    </div>
+
+    <div class="game-side">
+      <div class="card" style="padding:1.5rem;text-align:center">
+        <p class="section-label">Time left</p>
+        <div id="timer-ring" class="timer-ring" style="margin:0.75rem auto"></div>
+      </div>
+
+      <div class="card" style="padding:1.5rem;text-align:center">
+        <p class="section-label">Score</p>
+        <div id="score-display" style="font-family:var(--font-display);font-size:2.5rem;font-weight:700;color:var(--peach-deep)">0</div>
+        <p style="font-size:0.78rem;color:var(--muted);margin-top:4px">pts (bonus = ×2)</p>
+      </div>
+
+      <button class="btn btn-ghost" onclick="endGame()" style="width:100%;justify-content:center">End Game</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- RESULT SCREEN -->
+<div id="result-screen" class="hidden fade-in" style="max-width:640px;margin:2rem auto;padding:0 1.5rem 4rem">
+  <div class="card" style="text-align:center;margin-bottom:1.2rem">
+    <span id="result-medal" style="font-size:3.5rem;display:block;margin-bottom:0.5rem"></span>
+    <h2>Round complete!</h2>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:1.5rem">
+      <div style="background:var(--lilac-ghost);border-radius:var(--radius-md);padding:1rem">
+        <div style="font-size:0.78rem;color:var(--muted);margin-bottom:4px">Score</div>
+        <div style="font-family:var(--font-display);font-size:1.6rem;font-weight:700;color:var(--peach-deep)" id="result-score">0</div>
+      </div>
+      <div style="background:var(--lilac-ghost);border-radius:var(--radius-md);padding:1rem">
+        <div style="font-size:0.78rem;color:var(--muted);margin-bottom:4px">Found</div>
+        <div style="font-family:var(--font-display);font-size:1.6rem;font-weight:700;color:var(--plum)"><span id="result-found">0</span>/<span id="result-total">0</span></div>
+      </div>
+      <div style="background:var(--lilac-ghost);border-radius:var(--radius-md);padding:1rem">
+        <div style="font-size:0.78rem;color:var(--muted);margin-bottom:4px">Rate</div>
+        <div style="font-family:var(--font-display);font-size:1.6rem;font-weight:700;color:var(--plum)" id="result-pct">0%</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:1.2rem">
+    <p class="section-label" style="margin-bottom:10px">Your words</p>
+    <div class="found-words" id="result-found-words"></div>
+  </div>
+
+  <div class="card" style="margin-bottom:1.5rem">
+    <p class="section-label" style="margin-bottom:10px">You missed</p>
+    <div class="missed-words" id="result-missed-words"></div>
+  </div>
+
+  <div style="display:flex;gap:10px">
+    <button class="btn btn-primary" onclick="startGame()" style="flex:1;justify-content:center">Play Again</button>
+    <button class="btn btn-ghost" onclick="playAgain()" style="flex:1;justify-content:center">Change Level</button>
+    <a href="{% url 'index' %}" class="btn btn-secondary" style="flex:1;justify-content:center">Home</a>
+  </div>
+</div>
+
+<style>.hidden{display:none!important}</style>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'js/solo.js' %}"></script>
+{% endblock %}
