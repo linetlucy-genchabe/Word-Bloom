@@ -8,6 +8,12 @@
   <link rel="stylesheet" href="{% static 'css/style.css' %}"/>
   <link rel="icon" type="image/x-icon" href="{% static 'favicon.ico' %}">
   <link rel="icon" type="image/png" href="{% static 'favicon.png' %}">
+  <link rel="apple-touch-icon" href="{% static 'icons/icon-192x192.png' %}">
+  <link rel="manifest" href="{% static 'manifest.json' %}">
+  <meta name="theme-color" content="#C9B8E8">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="WordBloom">
   {% block head %}{% endblock %}
   <style>
     html, body { height: 100%; }
@@ -45,5 +51,15 @@
 
   <script src="{% static 'js/utils.js' %}"></script>
   {% block scripts %}{% endblock %}
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register("{% static 'serviceworker.js' %}", { scope: '/' })
+          .then(reg => console.log('SW registered:', reg.scope))
+          .catch(err => console.log('SW error:', err));
+      });
+    }
+  </script>
 </body>
 </html>

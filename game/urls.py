@@ -3,10 +3,11 @@ from . import views
 
 urlpatterns = [
     # Pages
-    path('',              views.index,   name='index'),
-    path('solo/',         views.solo,    name='solo'),
-    path('lobby/',        views.lobby,   name='lobby'),
-    path('room/<str:code>/', views.room, name='room'),
+    path('',                 views.index,   name='index'),
+    path('solo/',            views.solo,    name='solo'),
+    path('lobby/',           views.lobby,   name='lobby'),
+    path('room/<str:code>/', views.room,    name='room'),
+    path('offline/',         views.offline, name='offline'),
 
     # Solo API
     path('api/solo/start/',   views.api_solo_start,   name='api_solo_start'),

@@ -236,3 +236,6 @@ def api_room_end(request):
     return JsonResponse({'results': [{'name': p['name'], 'score': p['score'],
         'words': p['words'], 'count': len(p['words'])} for _, p in scores],
         'all_words': puzzle['words'], 'total': puzzle['count']})
+
+def offline(request):
+    return render(request, "game/offline.html")
