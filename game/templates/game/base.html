@@ -17,17 +17,23 @@
       flex-direction: column;
     }
     .page-wrap > *:not(nav):not(footer) { flex: 1; }
+    .nav {
+      background: #C9B8E8 !important;
+      border-bottom: 1px solid #A48FD4 !important;
+      backdrop-filter: none !important;
+    }
+    .nav-logo { color: var(--plum) !important; }
+    .nav-logo span { color: var(--peach-deep) !important; }
     footer {
       text-align: center;
       padding: 0.75rem 1rem;
       font-size: 0.78rem;
-      color: var(--muted);
-      border-top: 1px solid var(--border);
-      background: rgba(255,255,255,0.6);
-      backdrop-filter: blur(8px);
+      color: var(--plum);
+      border-top: 1px solid #A48FD4;
+      background: #C9B8E8;
       flex-shrink: 0;
     }
-    footer span { color: var(--plum); font-weight: 500; }
+    footer strong { color: #2E1D40; }
   </style>
 </head>
 <body>
@@ -40,7 +46,7 @@
     </nav>
     {% block content %}{% endblock %}
     <footer>
-      © {% now "Y" %} <span>LinetLucy Genchabe</span> · All rights reserved
+      © {% now "Y" %} <strong>LinetLucy Genchabe</strong> · All rights reserved
     </footer>
   </div>
 
