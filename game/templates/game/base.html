@@ -1,0 +1,25 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{% block title %}WordBloom{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'css/style.css' %}"/>
+  {% block head %}{% endblock %}
+</head>
+<body>
+  <div class="page-wrap">
+    <nav class="nav">
+      <a href="{% url 'index' %}" class="nav-logo">Word<span>Bloom</span></a>
+      <div style="display:flex;gap:10px">
+        {% block nav_extra %}{% endblock %}
+      </div>
+    </nav>
+    {% block content %}{% endblock %}
+  </div>
+
+  <script src="{% static 'js/utils.js' %}"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>
