@@ -1,0 +1,166 @@
+{% extends "game/base.html" %}
+{% load static %}
+{% block title %}Room {{ code }} — WordBloom{% endblock %}
+
+{% block nav_extra %}
+  <span class="badge badge-peach" style="font-size:0.9rem;letter-spacing:0.12em">{{ code }}</span>
+  <a href="{% url 'index' %}" class="btn btn-ghost" style="font-size:0.85rem">Leave</a>
+{% endblock %}
+
+{% block content %}
+
+<!-- WAITING SCREEN -->
+<div id="waiting-screen" class="fade-in" style="max-width:560px;margin:2rem auto;padding:0 1.5rem">
+  <div class="card" style="margin-bottom:1.2rem">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
+      <div>
+        <h3>Room <span style="color:var(--peach-deep)">{{ code }}</span></h3>
+        <p class="subtitle">Share this code with friends to join!</p>
+      </div>
+      <button class="btn btn-ghost" onclick="copyCode()" style="font-size:0.85rem">Copy code</button>
+    </div>
+
+    <div style="background:var(--lilac-soft);border-radius:var(--radius-md);padding:0.75rem 1rem;text-align:center;margin-bottom:1rem">
+      <span style="font-family:var(--font-display);font-size:2rem;font-weight:700;letter-spacing:0.2em;color:var(--plum)">{{ code }}</span>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:0.75rem">
+      <p class="section-label" style="margin:0">Players (<span id="player-count">1</span>)</p>
+      <div style="flex:1;height:1px;background:var(--border)"></div>
+    </div>
+    <div class="player-list" id="player-list">
+      <div class="player-item">
+        <div class="score-avatar">…</div>
+        <span style="color:var(--muted);font-size:0.9rem">Loading players…</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- HOST controls -->
+  <div id="host-controls" class="card" style="display:none;margin-bottom:1.2rem">
+    <p class="section-label" style="margin-bottom:10px">Choose level</p>
+    <div class="level-grid" style="margin-bottom:1.2rem">
+      {% for key, cfg in levels.items %}
+      <div class="level-card {% if key == 'easy' %}active{% endif %}" data-level="{{ key }}">
+        <div class="level-name">{{ cfg.label }}</div>
+        <div class="level-time">{{ cfg.time }}s</div>
+      </div>
+      {% endfor %}
+    </div>
+    <button class="btn btn-primary" onclick="startMultiGame()" style="width:100%;justify-content:center;padding:1rem;font-size:1rem">
+      Start Game for Everyone →
+    </button>
+  </div>
+
+  <!-- Guest waiting -->
+  <div id="guest-waiting" class="card" style="display:none;text-align:center;padding:2rem">
+    <div style="font-size:2rem;margin-bottom:0.75rem" class="spin">🌸</div>
+    <p style="color:var(--muted)">Waiting for the host to start the game…</p>
+  </div>
+</div>
+
+<!-- GAME SCREEN -->
+<div id="game-screen" class="hidden">
+  <div class="game-layout">
+    <div class="game-main">
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+        <span class="badge badge-lilac" id="meta-level">—</span>
+        <span style="font-size:0.85rem;color:var(--muted)" id="meta-count">— words</span>
+        <span class="badge badge-peach" style="margin-left:auto">Room: {{ code }}</span>
+      </div>
+
+      <div class="card" style="padding:1.5rem">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
+          <p class="section-label">Letters</p>
+          <button class="btn-icon" onclick="shuffleLetters()" title="Shuffle">🔀</button>
+        </div>
+        <div class="letter-rack" id="letter-rack"></div>
+      </div>
+
+      <div class="card" style="padding:1.2rem">
+        <div class="word-input-wrap">
+          <input type="text" class="word-input" id="word-input" placeholder="Type a word…"
+                 autocomplete="off" autocapitalize="characters" maxlength="20"/>
+          <button class="btn btn-primary" onclick="submitWord()">Submit</button>
+        </div>
+      </div>
+
+      <div class="card" style="padding:1.2rem">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <p class="section-label">My progress</p>
+          <span style="font-size:0.85rem;color:var(--muted)" id="progress-label">0 / 0 words</span>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+      </div>
+
+      <div class="card" style="padding:1.2rem">
+        <p class="section-label" style="margin-bottom:10px">My words</p>
+        <div class="found-words" id="found-words"></div>
+      </div>
+    </div>
+
+    <div class="game-side">
+      <div class="card" style="padding:1.5rem;text-align:center">
+        <p class="section-label">Time left</p>
+        <div id="timer-ring" class="timer-ring" style="margin:0.75rem auto"></div>
+      </div>
+
+      <div class="card" style="padding:1.5rem;text-align:center">
+        <p class="section-label">My score</p>
+        <div id="score-display" style="font-family:var(--font-display);font-size:2.2rem;font-weight:700;color:var(--peach-deep)">0</div>
+      </div>
+
+      <div class="card" style="padding:1.2rem">
+        <p class="section-label" style="margin-bottom:10px">Live scoreboard</p>
+        <div class="scoreboard" id="scoreboard"></div>
+      </div>
+
+      <button class="btn btn-ghost" onclick="endGame()" style="width:100%;justify-content:center">End Round</button>
+    </div>
+  </div>
+</div>
+
+<!-- RESULT SCREEN -->
+<div id="result-screen" class="hidden fade-in" style="max-width:640px;margin:2rem auto;padding:0 1.5rem 4rem">
+  <div class="card" style="text-align:center;margin-bottom:1.2rem">
+    <span style="font-size:3rem;display:block;margin-bottom:0.5rem">🏆</span>
+    <h2 id="mvp-name">Results!</h2>
+  </div>
+
+  <div class="card" style="margin-bottom:1.2rem">
+    <p class="section-label" style="margin-bottom:12px">Final standings</p>
+    <div id="results-list"></div>
+  </div>
+
+  <div class="card" style="margin-bottom:1.5rem">
+    <p class="section-label" style="margin-bottom:10px">Words nobody found</p>
+    <div class="missed-words" id="missed-words"></div>
+  </div>
+
+  <div style="display:flex;gap:10px">
+    <a href="{% url 'lobby' %}" class="btn btn-primary" style="flex:1;justify-content:center">New Room</a>
+    <a href="{% url 'index' %}" class="btn btn-ghost" style="flex:1;justify-content:center">Home</a>
+  </div>
+</div>
+
+<style>.hidden{display:none!important}</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  window.__ROOM_CODE__ = "{{ code }}";
+  window.__PLAYER_ID__ = sessionStorage.getItem('player_id') || '';
+  window.__IS_HOST__   = sessionStorage.getItem('is_host') === '1';
+
+  if (window.__IS_HOST__) {
+    document.getElementById('host-controls').style.display = 'block';
+  } else {
+    document.getElementById('guest-waiting').style.display = 'block';
+  }
+
+  function copyCode() {
+    navigator.clipboard.writeText("{{ code }}").then(() => showToast('Code copied!', 'success'));
+  }
+</script>
+<script src="{% static 'js/room.js' %}"></script>
+{% endblock %}
