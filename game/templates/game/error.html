@@ -1,0 +1,10 @@
+{% extends "game/base.html" %}
+{% block title %}Oops — WordBloom{% endblock %}
+{% block content %}
+<div style="text-align:center;padding:5rem 1.5rem">
+  <div style="font-size:3rem;margin-bottom:1rem">🌸</div>
+  <h2>{{ msg }}</h2>
+  <p class="subtitle" style="margin:0.75rem 0 2rem">The room may have ended or the code is incorrect.</p>
+  <a href="{% url 'index' %}" class="btn btn-primary">Go Home</a>
+</div>
+{% endblock %}
